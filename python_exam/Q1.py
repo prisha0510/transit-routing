@@ -17,7 +17,7 @@ def Dij_generator():
 
     graph_object = None
     try:
-        with open('/Users/aryan/Desktop/transit-routing-main/python_exam/ChicagoSketch_net.tntp') as f:
+        with open(r"C:\Users\prish\Desktop\transit-routing\python_exam\ChicagoSketch_net.tntp") as f:
             lines = f.readlines()
         lines = lines[9:]
         inits = []
@@ -27,11 +27,11 @@ def Dij_generator():
             temp = lines[i].split()
             inits.append(int(temp[0]))
             terms.append(int(temp[1]))
-            lengths.append(float(temp[3]))
+            lengths.append(float(temp[4]))
         
         dims1 = max(inits)
         dims2 = max(terms)
-        graph_object = np.zeros((dims1, dims2))
+        graph_object = np.ones((dims1, dims2))*np.inf
 
         for i in range(len(lengths)):
             graph_object[inits[i]-1][terms[i]-1] = lengths[i]
@@ -77,16 +77,16 @@ def Q1_dijkstra(source: int, destination: int, graph_object) -> int:
             u = min_D(dist, dist_calc)
             dist_calc[u] = 1
             for v in range(V):
-                is_neighbour = graph_object[u][v]>0
+                is_neighbour = graph_object[u][v]!=np.inf
                 if (is_neighbour):
                     new_dist = dist[u] + graph_object[u][v]
                     if(dist[v] > new_dist):
                         dist[v] = new_dist
-            #print(dist)
+            
         shortest_path_distance = dist[destination-1] if dist[destination-1]!= np.inf else -1
         return shortest_path_distance
     except:
-        print("exception")
+        
         return shortest_path_distance
 
 graph_object = Dij_generator()
