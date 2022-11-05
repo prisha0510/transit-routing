@@ -5,7 +5,7 @@ Note: You may use may define any additional class, functions if necessary.
 However, DO NOT CHANGE THE TEMPLATE CHANGE THE TEMPLATE OF THE FUNCTIONS PROVIDED.
 """
 import numpy as np
-
+import heapq
 
 def Dij_generator():
     """
@@ -17,37 +17,28 @@ def Dij_generator():
 
     graph_object = None
     try:
-        with open(r"C:\Users\prish\Desktop\transit-routing\python_exam\ChicagoSketch_net.tntp") as f:
+        with open(__file__[:-5] + "ChicagoSketch_net.tntp") as f:
             lines = f.readlines()
         lines = lines[9:]
-        inits = []
-        terms = []
-        lengths = []
-        for i in range(len(lines)):
+        n = len(lines)
+        inits = np.zeros(n)
+        terms = np.zeros(n)
+        lengths = np.zeros(n)
+        for i in range(n):
             temp = lines[i].split()
-            inits.append(int(temp[0]))
-            terms.append(int(temp[1]))
-            lengths.append(float(temp[4]))
+            inits[i] = int(temp[0])
+            terms[i] = int(temp[1])
+            lengths[i] = float(temp[4])
         
-        dims1 = max(inits)
-        dims2 = max(terms)
-        graph_object = np.ones((dims1, dims2))*np.inf
-
-        for i in range(len(lengths)):
-            graph_object[inits[i]-1][terms[i]-1] = lengths[i]
-            #graph_object[terms[i]-1][inits[i]-1] = lengths[i]
+        dims1 = np.max(inits)
+        dims2 = np.max(terms)
+        graph_object = np.ones((int(dims1), int(dims2)))*np.inf
+        for i in range(n):
+            graph_object[int(inits[i]-1)][int(terms[i]-1)] = lengths[i]
+            
         return graph_object
     except:
         return graph_object
-
-def min_D(dist, dist_calc):
-    mn = np.inf
-
-    for i in range(dist.shape[0]):
-        if dist_calc[i]==0 and dist[i]<mn:
-            mn = dist[i]
-            min_index = i
-    return min_index
 
 
 def Q1_dijkstra(source: int, destination: int, graph_object) -> int:
@@ -69,25 +60,21 @@ def Q1_dijkstra(source: int, destination: int, graph_object) -> int:
     try:
         V = graph_object.shape[1]
 
+        q = [(0,source-1)]
         dist = np.ones(V) * np.inf
         dist[source-1] = 0
-        dist_calc = np.zeros(V)
+
+        while (q):
+            smallest_dist, u = heapq.heappop(q)
+            for i in range(V):
+                new_dist = smallest_dist + graph_object[u][i]
+                if new_dist<dist[i]:
+                    dist[i] = new_dist
+                    heapq.heappush(q, (new_dist, i))
+            if (u == destination-1):
+                break
         
-        for i in range(V):
-            u = min_D(dist, dist_calc)
-            dist_calc[u] = 1
-            for v in range(V):
-                is_neighbour = graph_object[u][v]!=np.inf
-                if (is_neighbour):
-                    new_dist = dist[u] + graph_object[u][v]
-                    if(dist[v] > new_dist):
-                        dist[v] = new_dist
-            
-        shortest_path_distance = dist[destination-1] if dist[destination-1]!= np.inf else -1
+        shortest_path_distance = dist[destination-1] if dist[destination-1]!= np.inf else -1      
         return shortest_path_distance
     except:
-        
         return shortest_path_distance
-
-graph_object = Dij_generator()
-print(Q1_dijkstra(253, 127, graph_object))
